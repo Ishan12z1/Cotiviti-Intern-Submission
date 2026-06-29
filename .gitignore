@@ -1,1 +1,18 @@
-.venv
+# Virtual environment
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Runtime artifacts
+audit_log.jsonl
+
+# Environment / secrets
+.env
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
