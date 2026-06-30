@@ -69,6 +69,36 @@ code"* or *"Change visit limit from 12 to 10"*. The LLM returns a structured **`
 rule's identity, its source policy evidence, the audit log, or prior results — and nothing
 applies automatically.**
 
+## Demo walkthrough
+
+All screenshots are from the app running in **offline mock mode** — no API key or network needed.
+
+**1 · Draft a rule from real policy text.** The input is a public-domain **CMS NCD 210.14**
+(Lung Cancer Screening with LDCT) excerpt.
+
+![Draft a rule from policy text](docs/images/01-draft.png)
+
+**2 · Structured draft + validation.** The LLM emits a Pydantic `PolicyRule`; the validator
+checks schema, source evidence, CPT/ICD-10 formats, and that every referenced field exists in
+the claim data — all green before approval is allowed.
+
+![Drafted rule and validation checks](docs/images/02-validate.png)
+
+**3 · Natural-language revision.** A reviewer types a plain-English instruction; the model
+returns a structured *patch* (not a rewrite), shown as a **before/after diff** to apply or discard.
+
+![Natural-language revision with before/after diff](docs/images/03-refine.png)
+
+**4 · Deterministic decisions.** The approved rule runs over synthetic claims, producing an
+explainable **PASS / FAIL / NEEDS_REVIEW / NOT_APPLICABLE** spread with a per-claim reason.
+
+![Run on claims with outcome breakdown](docs/images/04-run.png)
+
+**5 · Append-only audit log.** Every decision is logged with rule id/version, timestamp,
+outcome, reasons, and the **source-policy evidence** it rested on.
+
+![Append-only audit log](docs/images/05-audit.png)
+
 ## Engineering highlights
 
 - **Separation of concerns that enforces the thesis** — the decision engine has *no* LLM or UI
@@ -81,7 +111,7 @@ applies automatically.**
   or `source_evidence`, and the apply step restores them, so provenance cannot drift.
 - **Graceful degradation** — full offline mock mode means the app and the test suite need no
   network or API key.
-- **Tested** — **31 passing tests** across the engine, validator, extractor, and patcher.
+- **Tested** — **32 passing tests** across the engine, validator, extractor, and patcher.
 
 ## Quickstart
 
@@ -127,6 +157,7 @@ src/
 data/
   sample_cms_policy.txt      Real CMS NCD 210.14 excerpt (extractor input; public domain)
   synthetic_claims.csv       Synthetic claims (no PHI)
+docs/images/                 Screenshots used in this README
 tests/                       pytest suite (engine, validator, extractor, patcher)
 ```
 
