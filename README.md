@@ -12,9 +12,9 @@ A proof-of-concept built for the Cotiviti AI/ML internship assessment
 
 ## Why this matters
 
-In FY2025, CMS reported an estimated **$28.83B** in Medicare and **$37.39B** in Medicaid
+In FY2025, CMS reported an estimated **$28.83B** in Medicare (FFS) and **$37.39B** in Medicaid
 improper payments — much of it tied to insufficient documentation or claims that didn't meet
-program requirements. The root problem: **policy is written in natural language for humans,
+program requirements.[^cms] The root problem: **policy is written in natural language for humans,
 but claim systems need structured, testable, auditable logic.** Translating one into the other
 is a slow, error-prone, expert-dependent bottleneck.
 
@@ -41,7 +41,7 @@ The LLM is kept strictly in an *assistive* role:
      ▼
  PolicyRule (draft) ──(2) Validator──► (3) Human approval ──► Active Rule
      ▲                                                            │
-     │  (optional) NL revision: "Add 97116 as a covered code"     │  (4) Deterministic engine
+     │  (optional) NL revision: "Add G0297 as a covered code"     │  (4) Deterministic engine
      │            → structured RulePatch → before/after diff      ▼
      └───────────────────────────────────────────────  PASS / FAIL / NEEDS_REVIEW / N/A
                                                                   │
@@ -62,8 +62,8 @@ The LLM is kept strictly in an *assistive* role:
    met → **PASS**.
 
 ### Natural-language rule revision
-A reviewer can revise an approved rule in plain English — *"Add 97116 as a covered service
-code"* or *"Change visit limit from 12 to 10"*. The LLM returns a structured **`RulePatch`**
+A reviewer can revise an approved rule in plain English — *"Add G0297 as a covered service
+code"* or *"Change the maximum units to 2"*. The LLM returns a structured **`RulePatch`**
 (a partial change, not a rewrite); the app applies it deterministically, re-validates, shows a
 **before/after diff**, and saves it only on approval. **By design a patch can never alter the
 rule's identity, its source policy evidence, the audit log, or prior results — and nothing
@@ -112,6 +112,42 @@ outcome, reasons, and the **source-policy evidence** it rested on.
 - **Graceful degradation** — full offline mock mode means the app and the test suite need no
   network or API key.
 - **Tested** — **32 passing tests** across the engine, validator, extractor, and patcher.
+
+## Research direction
+
+Beyond the working app, this POC is a vehicle for a research question:
+
+> **Can a generative model safely accelerate the translation of natural-language healthcare
+> policy into structured, auditable claim-review logic — without ceding decision authority to
+> the model?**
+
+The architecture here is a concrete hypothesis about *how* to do that: keep the LLM upstream as
+a **drafting/revision assistant**, gate its output behind schema + format validation and a human
+approval step, and make every final decision in deterministic, testable code with traceable
+source evidence.
+
+**How a fuller study would evaluate it:**
+- **Extraction fidelity** — drafted rules vs. expert-authored gold rules (field-level
+  precision/recall on codes, thresholds, and evidence spans).
+- **Reviewer leverage** — time-to-approve and edits-per-rule vs. authoring from scratch.
+- **Safety / catch-rate** — how reliably validation + approval reject malformed or ungrounded
+  drafts, measured on adversarial/seeded-error policies.
+- **Decision correctness** — engine outcomes against labelled synthetic claims, with error
+  analysis across PASS / FAIL / NEEDS_REVIEW / NOT_APPLICABLE.
+
+**What this POC already surfaced** (findings worth carrying into the report):
+- **A codeable / clinical boundary.** A faithful extraction of NCD 210.14 leaves criteria like
+  the ≥20 pack-year history *un-encodable* from claim fields — a useful signal about where rule
+  automation stops and human/clinical judgment must take over.
+- **Faithfulness vs. demonstrability tension.** The more strictly a rule mirrors the source
+  policy, the fewer claims it auto-decides — arguing for evaluation on *real, code-rich* policies
+  (e.g. LCDs with explicit ICD-10 indication lists), not just illustrative ones.
+- **Evidence grounding matters.** Carrying a verbatim `source_evidence` span through to the
+  audit log is what makes a drafted rule defensible; verifying that span actually appears in the
+  policy text is a natural next guardrail.
+
+**Future work:** real LCDs with ICD-10 indication groups, multi-rule policies, an automated
+evidence-grounding check, and a gold-rule evaluation harness to put numbers on the questions above.
 
 ## Quickstart
 
@@ -165,5 +201,15 @@ tests/                       pytest suite (engine, validator, extractor, patcher
 
 This is a deliberately **simple, bounded proof of concept**. The policy input is a real,
 public-domain **CMS NCD 210.14** (Lung Cancer Screening with LDCT) excerpt (abridged for
-demonstration, not authoritative), while all claims are **synthetic** — and no real PHI is used. The design intent mirrors a realistic deployment: a human-reviewed, upstream
-**rule-drafting assistant**, with all final claim decisions made by deterministic code.
+demonstration, not authoritative), while all claims are **synthetic** — no real PHI is used.
+The design intent mirrors a realistic deployment: a human-reviewed, upstream **rule-drafting
+assistant**, with all final claim decisions made by deterministic code.
+
+Some of the policy's clinical eligibility criteria — e.g. the NCD's *≥20 pack-year smoking
+history* and *quit-within-15-years* requirements — aren't codeable from the available claim
+fields. By design the rule does **not** guess at them: per the NCD they're established and
+recorded during the required, documented shared-decision-making visit, so the rule checks that
+the visit is on file and defers that clinical judgment to human review — exactly the
+*"LLM drafts, deterministic code + humans decide"* split this POC is built to demonstrate.
+
+[^cms]: [CMS, Fiscal Year 2025 Improper Payments Fact Sheet](https://www.cms.gov/newsroom/fact-sheets/fiscal-year-2025-improper-payments-fact-sheet).
