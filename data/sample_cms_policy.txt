@@ -1,0 +1,13 @@
+SYNTHETIC POLICY EXCERPT - FOR DEMONSTRATION ONLY (not authoritative guidance)
+
+Bone Mass Measurement - Dual-Energy X-Ray Absorptiometry (DEXA), CPT 77080
+
+Coverage criteria: Dual-energy x-ray absorptiometry (DEXA, procedure code 77080) is covered for beneficiaries who are 65 years of age or older when ordered to evaluate or monitor osteoporosis or related bone-density conditions.
+
+Approved indications include the following diagnoses: M81.0 (age-related osteoporosis without current pathological fracture), M80.00 (age-related osteoporosis with current pathological fracture), E21.0 (primary hyperparathyroidism), and Z78.0 (asymptomatic menopausal state).
+
+Documentation requirements: A signed physician order must be on file to support the service.
+
+Frequency limit: No more than one (1) unit of DEXA screening is covered per claim.
+
+Exclusions: A DEXA scan is not separately covered when a prior DEXA scan has been performed within the preceding 24 months.
