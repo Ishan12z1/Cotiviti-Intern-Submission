@@ -39,6 +39,19 @@ def log_results(results: Iterable[EvalResult], path: str = DEFAULT_LOG_PATH) -> 
     return written
 
 
+def log_event(event: dict, path: str = DEFAULT_LOG_PATH) -> None:
+    """Append a single non-claim audit event (e.g. a rule change) as JSONL.
+
+    Append-only: this never modifies or removes existing entries.
+    """
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    record = {"logged_at": datetime.now(timezone.utc).isoformat(), **event}
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record) + "\n")
+
+
 def read_log(path: str = DEFAULT_LOG_PATH) -> List[dict]:
     """Read all audit-log entries (oldest first). Empty list if no log yet."""
     if not os.path.exists(path):
