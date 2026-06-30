@@ -6,8 +6,8 @@
 A proof-of-concept built for the Cotiviti AI/ML internship assessment
 (*Content Management in Healthcare — converting written policy into executable claim rules*).
 
-**Tech:** Python · Streamlit · Pydantic · Google Gemini (structured JSON output) · pandas · pytest
-** Video link** : https://www.loom.com/share/91c14d50eb5848db85e2ce7e8791540c(https://www.loom.com/share/91c14d50eb5848db85e2ce7e8791540c)
+**Tech:** Python · Streamlit · Pydantic · Google Gemini (structured JSON output) · pandas · pytest  
+**Video link** : https://www.loom.com/share/91c14d50eb5848db85e2ce7e8791540c
 
 ---
 
