@@ -1,0 +1,7 @@
+# Custom theme - light teal / slate palette.
+[theme]
+primaryColor = "#1F7A8C"
+backgroundColor = "#FBFDFE"
+secondaryBackgroundColor = "#E8EEF2"
+textColor = "#0B2545"
+font = "sans serif"
