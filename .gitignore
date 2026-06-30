@@ -16,3 +16,5 @@ audit_log.jsonl
 .DS_Store
 .vscode/
 .idea/
+
+CLAUDE.md

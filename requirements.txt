@@ -2,5 +2,5 @@ streamlit
 pandas
 pydantic
 python-dotenv
-openai
+google-genai
 pytest
