@@ -1,13 +1,39 @@
-SYNTHETIC POLICY EXCERPT - FOR DEMONSTRATION ONLY (not authoritative guidance)
+CMS NATIONAL COVERAGE DETERMINATION (NCD) 210.14 - SCREENING FOR LUNG CANCER
+WITH LOW DOSE COMPUTED TOMOGRAPHY (LDCT)
+Source: U.S. Centers for Medicare & Medicaid Services, Medicare NCD Manual,
+Section 210.14 (public domain). Excerpted and lightly abridged for this
+demonstration only - NOT authoritative guidance. Consult the current CMS NCD
+for the controlling text.
 
-Bone Mass Measurement - Dual-Energy X-Ray Absorptiometry (DEXA), CPT 77080
+Indications and Limitations of Coverage
 
-Coverage criteria: Dual-energy x-ray absorptiometry (DEXA, procedure code 77080) is covered for beneficiaries who are 65 years of age or older when ordered to evaluate or monitor osteoporosis or related bone-density conditions.
+Effective for claims with dates of service on or after February 10, 2022, the
+Centers for Medicare & Medicaid Services covers annual screening for lung cancer
+with low dose computed tomography (LDCT) as an additional preventive service
+benefit under Medicare Part B when all of the following eligibility criteria are
+met. The beneficiary must:
 
-Approved indications include the following diagnoses: M81.0 (age-related osteoporosis without current pathological fracture), M80.00 (age-related osteoporosis with current pathological fracture), E21.0 (primary hyperparathyroidism), and Z78.0 (asymptomatic menopausal state).
+  1. Be aged 50 to 77 years;
+  2. Be asymptomatic (no signs or symptoms of lung cancer);
+  3. Have a tobacco smoking history of at least 20 pack-years (one pack-year =
+     smoking one pack per day for one year); and
+  4. Be a current smoker or one who has quit smoking within the last 15 years.
 
-Documentation requirements: A signed physician order must be on file to support the service.
+Counseling and Shared Decision-Making Visit
 
-Frequency limit: No more than one (1) unit of DEXA screening is covered per claim.
+Before the beneficiary's first lung cancer LDCT screening, the beneficiary must
+receive a counseling and shared decision-making visit that is furnished by a
+physician or qualified non-physician practitioner, and that is appropriately
+documented in the beneficiary's medical record. The visit must include
+determination of beneficiary eligibility (including age, smoking history, and
+absence of symptoms) and shared decision-making.
 
-Exclusions: A DEXA scan is not separately covered when a prior DEXA scan has been performed within the preceding 24 months.
+Frequency Standard
+
+Screening with LDCT is covered no more frequently than once per year (annually);
+at least 11 months must have passed following the month of the last LDCT
+screening before a subsequent screening is covered.
+
+Procedure note: The low dose CT scan for lung cancer screening is reported with
+CPT 71271. The counseling and shared decision-making visit is reported with
+HCPCS G0296.

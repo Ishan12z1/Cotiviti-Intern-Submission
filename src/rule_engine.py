@@ -5,12 +5,15 @@ Streamlit imports, so it can be unit-tested headlessly and reused unchanged when
 the LLM drafting layer is added.
 
 Evaluation precedence (see project plan):
-  1. If the rule does not apply to the claim        -> NOT_APPLICABLE
-  2. If any needed field is missing/unparseable     -> NEEDS_REVIEW
-  3. If any exclusion holds                          -> FAIL
-  4. If all indications + timing limits hold         -> PASS, else FAIL
+  1. If a scope field is missing/unparseable         -> NEEDS_REVIEW
+  2. If the rule definitively does not apply          -> NOT_APPLICABLE
+  3. If any needed field is missing/unparseable        -> NEEDS_REVIEW
+  4. If any exclusion holds                            -> FAIL
+  5. If all indications + timing limits hold           -> PASS, else FAIL
 
 The engine never guesses: anything it cannot determine becomes NEEDS_REVIEW.
+A claim missing a scope field (e.g. no procedure code) is flagged for human
+review rather than silently dismissed as not-applicable.
 """
 
 from __future__ import annotations
@@ -49,8 +52,8 @@ def _to_number(value: Any):
 def _as_text(value: Any) -> str:
     """Normalize a code/string value for equality comparison.
 
-    Handles pandas reading numeric-looking codes as ints/floats (e.g. 77080 or
-    77080.0) so they still compare equal to the string "77080".
+    Handles pandas reading numeric-looking codes as ints/floats (e.g. 71271 or
+    71271.0) so they still compare equal to the string "71271".
     """
     if isinstance(value, float) and value.is_integer():
         return str(int(value))
@@ -117,7 +120,14 @@ def evaluate(rule: Rule, claim: Mapping[str, Any]) -> EvalResult:
     # 1. Scope: does this rule apply at all?
     for cond in rule.applies_when:
         status, reason = _check(cond, claim)
-        if status != _HOLD:
+        if status == _MISSING:
+            # A missing scope field means we can't even tell if the rule applies.
+            # Flag for human review rather than silently dismissing the claim.
+            return result(
+                Outcome.NEEDS_REVIEW,
+                [f"Cannot determine whether rule {rule.rule_id} applies: {reason}"],
+            )
+        if status == _VIOLATE:
             return result(
                 Outcome.NOT_APPLICABLE,
                 [f"Rule {rule.rule_id} does not apply to this claim: {reason}"],

@@ -28,7 +28,7 @@ from .schemas import (
     PolicyRule,
 )
 
-# CPT: 5 digits (e.g. 77080). HCPCS Level II: 1 letter + 4 digits (e.g. G0121).
+# CPT: 5 digits (e.g. 71271). HCPCS Level II: 1 letter + 4 digits (e.g. G0296).
 _CPT_RE = re.compile(r"^\d{5}$")
 _HCPCS_RE = re.compile(r"^[A-Z]\d{4}$")
 # ICD-10-CM: a letter (not U placeholder slots aside), a digit, an alphanumeric,

@@ -1,7 +1,8 @@
-# Custom theme - light teal / slate palette.
+# Brand palette: navy (primary) + teal (accent) on a light background.
 [theme]
-primaryColor = "#1F7A8C"
-backgroundColor = "#FBFDFE"
-secondaryBackgroundColor = "#E8EEF2"
-textColor = "#0B2545"
+base = "light"
+primaryColor = "#0F8B8D"             # teal — buttons, links, accents
+backgroundColor = "#F6F8FB"          # light page background (not pure white)
+secondaryBackgroundColor = "#FFFFFF" # cards, panels, inputs
+textColor = "#1B2540"                # body copy
 font = "sans serif"

@@ -112,7 +112,7 @@ class PolicyRule(BaseModel):
     deterministic engine can run.
     """
 
-    rule_id: str = Field(..., description="Short identifier, e.g. 'CMS-DEXA-001'.")
+    rule_id: str = Field(..., description="Short identifier, e.g. 'CMS-LDCT-001'.")
     title: str = Field(..., description="Human-readable rule title.")
     description: str = Field(default="", description="One-sentence summary of the rule.")
 

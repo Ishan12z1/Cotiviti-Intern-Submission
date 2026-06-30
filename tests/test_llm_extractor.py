@@ -11,16 +11,16 @@ from src.validator import validate_policy_rule
 
 CLAIM_COLUMNS = [
     "claim_id", "patient_age", "procedure_code", "diagnosis_code",
-    "prior_dexa_within_24mo", "physician_order", "units",
+    "prior_ldct_within_12mo", "shared_decision_visit", "units",
 ]
 
 PASS_CLAIM = {
     "claim_id": "T1",
-    "patient_age": 70,
-    "procedure_code": "77080",
-    "diagnosis_code": "M81.0",
-    "prior_dexa_within_24mo": "N",
-    "physician_order": "ORD-1",
+    "patient_age": 60,
+    "procedure_code": "71271",
+    "diagnosis_code": "Z87.891",
+    "prior_ldct_within_12mo": "N",
+    "shared_decision_visit": "SDM-1",
     "units": 1,
 }
 
@@ -31,7 +31,7 @@ def test_mock_mode_needs_no_key(monkeypatch):
     assert active_mode("auto") == "mock"
     draft = extract_rule("any policy text", CLAIM_COLUMNS, mode="auto")
     assert isinstance(draft, PolicyRule)
-    assert draft.service_codes == ["77080"]
+    assert draft.service_codes == ["71271"]
 
 
 def test_mock_draft_is_valid():
@@ -53,10 +53,10 @@ def test_converter_produces_runnable_rule():
 def test_converted_rule_matches_outcomes():
     rule = policy_rule_to_rule(extract_rule("policy", CLAIM_COLUMNS, mode="mock"))
 
-    too_young = {**PASS_CLAIM, "claim_id": "T2", "patient_age": 50}
+    too_young = {**PASS_CLAIM, "claim_id": "T2", "patient_age": 45}
     assert evaluate(rule, too_young).outcome == Outcome.FAIL
 
-    missing_doc = {**PASS_CLAIM, "claim_id": "T3", "physician_order": ""}
+    missing_doc = {**PASS_CLAIM, "claim_id": "T3", "shared_decision_visit": ""}
     assert evaluate(rule, missing_doc).outcome == Outcome.NEEDS_REVIEW
 
     other_proc = {**PASS_CLAIM, "claim_id": "T4", "procedure_code": "99213"}

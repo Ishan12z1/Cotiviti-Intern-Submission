@@ -2,7 +2,8 @@
 
 Every evaluation is recorded as one JSON object per line (JSONL). This gives a
 simple, durable, human-readable trail of what was decided, by which rule version,
-and why - supporting the report's emphasis on auditability. No database.
+why, and the source-policy evidence the rule was drawn from - supporting the
+report's emphasis on auditability. No database.
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ def log_results(results: Iterable[EvalResult], path: str = DEFAULT_LOG_PATH) -> 
                 "claim_id": result.claim_id,
                 "outcome": result.outcome.value,
                 "reasons": result.reasons,
+                "evidence": result.evidence,
             }
             fh.write(json.dumps(record) + "\n")
             written += 1

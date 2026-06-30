@@ -1,64 +1,60 @@
 """Hardcoded sample rule for v1.
 
-This stands in for an LLM-extracted rule. It is a simplified, synthetic
-representation of a CMS-style coverage policy for DEXA (bone density) screening.
-It deliberately exercises every supported operator and includes a documentation
-requirement so the demo can show a NEEDS_REVIEW outcome caused by missing
-documentation - directly illustrating the report's lead statistic on improper
-payments tied to insufficient documentation.
+This stands in for an LLM-extracted rule. It is a structured representation of
+CMS NCD 210.14 (Screening for Lung Cancer with Low Dose CT) for LDCT lung cancer
+screening (CPT 71271). It deliberately exercises the supported operators and
+includes a documentation requirement so the demo can show a NEEDS_REVIEW outcome
+caused by missing documentation - directly illustrating the report's lead
+statistic on improper payments tied to insufficient documentation.
 
-NOTE: codes and thresholds are illustrative for the POC, not authoritative
-clinical or billing guidance.
+NOTE: the policy's pack-year smoking history and quit-within-15-years criteria
+are not codeable from the available claim fields; per NCD 210.14 they are
+established and recorded during the required shared-decision-making visit, so the
+rule checks that the visit was documented and leaves that clinical determination
+to human review. Codes and thresholds are reproduced for the POC, not
+authoritative billing guidance.
 """
 
 from .schemas import Condition, Operator, Rule
 
-# Diagnosis codes that justify a DEXA screening in this synthetic policy.
-ALLOWED_DIAGNOSIS_CODES = ["M81.0", "M80.00", "E21.0", "Z78.0"]
-
 SAMPLE_RULE = Rule(
-    rule_id="CMS-DEXA-001",
+    rule_id="CMS-LDCT-001",
     version=1,
-    title="DEXA Bone Density Screening Coverage",
+    title="Lung Cancer Screening with LDCT Coverage",
     description=(
-        "Determines whether a claim for a DEXA bone density scan (procedure 77080) "
-        "meets coverage criteria, documentation, and frequency limits."
+        "Determines whether a claim for low dose CT lung cancer screening "
+        "(procedure 71271) meets NCD 210.14 age, documentation, and frequency "
+        "criteria."
     ),
     applies_when=[
         Condition(
             field="procedure_code",
-            op=Operator.EQ,
-            value="77080",
-            description="Claim is for a DEXA bone density scan (CPT 77080).",
+            op=Operator.IN,
+            value=["71271"],
+            description="Claim is for low dose CT lung cancer screening (CPT 71271).",
         ),
     ],
     indications=[
         Condition(
             field="patient_age",
             op=Operator.BETWEEN,
-            value=[65, 120],
-            description="Patient is 65 years or older.",
-        ),
-        Condition(
-            field="diagnosis_code",
-            op=Operator.IN,
-            value=ALLOWED_DIAGNOSIS_CODES,
-            description="Diagnosis is an approved indication for DEXA screening.",
+            value=[50, 77],
+            description="Beneficiary is aged 50 to 77 years.",
         ),
     ],
     exclusions=[
         Condition(
-            field="prior_dexa_within_24mo",
+            field="prior_ldct_within_12mo",
             op=Operator.EQ,
             value="Y",
-            description="A prior DEXA scan within 24 months is not separately covered.",
+            description="A prior LDCT screening within the last 12 months is not separately covered.",
         ),
     ],
     documentation_requirements=[
         Condition(
-            field="physician_order",
+            field="shared_decision_visit",
             op=Operator.PRESENT,
-            description="A signed physician order must be on file.",
+            description="A documented counseling and shared decision-making visit must be on file.",
         ),
     ],
     timing_limits=[
@@ -66,13 +62,16 @@ SAMPLE_RULE = Rule(
             field="units",
             op=Operator.LTE,
             value=1,
-            description="At most one DEXA scan unit per claim.",
+            description="At most one LDCT screening unit per claim.",
         ),
     ],
     source_evidence=(
-        "Synthetic policy excerpt: \"Dual-energy x-ray absorptiometry (DEXA, CPT 77080) "
-        "is covered once every 24 months for beneficiaries aged 65 and older with an "
-        "approved osteoporosis-related indication, when supported by a signed physician "
-        "order.\""
+        "CMS NCD 210.14 (Screening for Lung Cancer with LDCT): Medicare covers "
+        "annual screening for lung cancer with LDCT when the beneficiary is "
+        "\"aged 50 to 77 years\", \"asymptomatic\", and meets the tobacco smoking "
+        "history criteria. Before the first screening the beneficiary \"must receive "
+        "a counseling and shared decision-making visit\" that is \"appropriately "
+        "documented in the beneficiary's medical record.\" Covered \"no more "
+        "frequently than once per year.\" The LDCT scan is reported with CPT 71271."
     ),
 )

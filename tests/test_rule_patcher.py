@@ -11,7 +11,7 @@ from src.schemas import RulePatch
 
 CLAIM_COLUMNS = [
     "claim_id", "patient_age", "procedure_code", "diagnosis_code",
-    "prior_dexa_within_24mo", "physician_order", "units",
+    "prior_ldct_within_12mo", "shared_decision_visit", "units",
 ]
 
 
@@ -31,15 +31,15 @@ def test_mock_change_visit_limit():
 
 
 def test_mock_remove_service_code():
-    patch = propose_patch("Remove 77080 from the service codes", _current(), CLAIM_COLUMNS, mode="mock")
-    assert "77080" in patch.remove_service_codes
+    patch = propose_patch("Remove 71271 from the service codes", _current(), CLAIM_COLUMNS, mode="mock")
+    assert "71271" in patch.remove_service_codes
 
 
 def test_apply_add_service_code():
     current = _current()
     patched = apply_patch(current, RulePatch(add_service_codes=["97116"]))
     assert "97116" in patched.service_codes
-    assert "77080" in patched.service_codes  # original preserved
+    assert "71271" in patched.service_codes  # original preserved
 
 
 def test_apply_set_max_units():

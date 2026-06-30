@@ -28,8 +28,8 @@ from .schemas import (
 DEFAULT_MODEL = "gemini-2.5-flash"
 
 # Claim fields the mock maps policy concepts onto (must exist in the claims CSV).
-_EXCLUSION_FIELD = "prior_dexa_within_24mo"
-_DOCUMENTATION_FIELD = "physician_order"
+_EXCLUSION_FIELD = "prior_ldct_within_12mo"
+_DOCUMENTATION_FIELD = "shared_decision_visit"
 
 _SYSTEM_INSTRUCTION = (
     "You convert healthcare payment/coding policy text into a single structured "
@@ -53,27 +53,39 @@ def active_mode(mode: str = "auto") -> str:
 
 
 def _mock_policy_rule() -> PolicyRule:
-    """Deterministic draft matching data/sample_cms_policy.txt (no API needed)."""
+    """Deterministic draft matching data/sample_cms_policy.txt (no API needed).
+
+    Structured from CMS NCD 210.14 (Lung Cancer Screening with LDCT). The age
+    range and annual frequency are taken directly from the policy. The pack-year
+    smoking history and quit-within-15-years criteria are not codeable from the
+    available claim fields; per the policy they are established and recorded
+    during the required shared-decision-making visit, so the rule checks that the
+    visit was documented and leaves that clinical determination to human review.
+    """
     return PolicyRule(
-        rule_id="CMS-DEXA-001",
-        title="DEXA Bone Density Screening Coverage",
+        rule_id="CMS-LDCT-001",
+        title="Lung Cancer Screening with LDCT Coverage (NCD 210.14)",
         description=(
-            "Coverage, documentation, and frequency criteria for DEXA bone density "
-            "scans (CPT 77080)."
+            "Coverage, documentation, and frequency criteria for low dose CT lung "
+            "cancer screening (CPT 71271) per CMS NCD 210.14."
         ),
-        service_codes=["77080"],
-        diagnosis_codes=["M81.0", "M80.00", "E21.0", "Z78.0"],
-        min_patient_age=65,
-        max_patient_age=None,
+        service_codes=["71271"],
+        diagnosis_codes=[],
+        min_patient_age=50,
+        max_patient_age=77,
         exclusion_flag_fields=[_EXCLUSION_FIELD],
         required_documentation_fields=[_DOCUMENTATION_FIELD],
         max_units=1,
         source_evidence=(
-            "Dual-energy x-ray absorptiometry (DEXA, procedure code 77080) is covered "
-            "for beneficiaries who are 65 years of age or older ... A signed physician "
-            "order must be on file ... No more than one (1) unit ... per claim ... not "
-            "separately covered when a prior DEXA scan has been performed within the "
-            "preceding 24 months."
+            "CMS NCD 210.14 (Screening for Lung Cancer with LDCT): Medicare covers "
+            "\"annual screening for lung cancer with low dose computed tomography "
+            "(LDCT)\" when the beneficiary is \"aged 50 to 77 years\", \"asymptomatic\", "
+            "has \"a tobacco smoking history of at least 20 pack-years\", and is \"a "
+            "current smoker or one who has quit smoking within the last 15 years.\" "
+            "Before the first screening the beneficiary \"must receive a counseling and "
+            "shared decision-making visit\" that is \"appropriately documented in the "
+            "beneficiary's medical record.\" Covered \"no more frequently than once per "
+            "year.\" The LDCT scan is reported with CPT 71271."
         ),
     )
 

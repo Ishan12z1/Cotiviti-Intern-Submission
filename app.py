@@ -44,6 +44,56 @@ OUTCOME_STYLE = {
 
 st.set_page_config(page_title="Policy-to-Rule Claims Assistant", layout="centered")
 
+# --- Brand styling (navy primary + teal accent) ----------------------------
+st.markdown(
+    """
+    <style>
+      :root {
+        --color-navy: #1E2761; --color-navy-deep: #16224F; --color-teal: #0F8B8D;
+        --color-ice: #CADCFC; --color-bg-light: #F6F8FB; --color-white: #FFFFFF;
+        --color-text-muted: #5B6B85; --color-text-dark: #1B2540; --color-warn: #8C6A1B;
+      }
+      /* Navy, dominant headings */
+      h1, h2, h3 { color: var(--color-navy) !important; font-weight: 700; }
+      /* Teal links */
+      a, a:visited { color: var(--color-teal) !important; }
+      /* Muted captions */
+      [data-testid="stCaptionContainer"], .stCaption { color: var(--color-text-muted) !important; }
+      /* Teal primary buttons, navy on hover */
+      .stButton > button[kind="primary"] {
+        background-color: var(--color-teal); border-color: var(--color-teal); color: #fff;
+      }
+      .stButton > button[kind="primary"]:hover {
+        background-color: var(--color-navy); border-color: var(--color-navy); color: #fff;
+      }
+      /* Navy brand sidebar with ice text */
+      section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-navy-deep) 100%);
+      }
+      section[data-testid="stSidebar"] h1,
+      section[data-testid="stSidebar"] h2,
+      section[data-testid="stSidebar"] h3,
+      section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+      section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+        color: var(--color-ice) !important;
+      }
+      section[data-testid="stSidebar"] .stButton > button {
+        background-color: var(--color-teal); border-color: var(--color-teal); color: #fff;
+      }
+      /* Custom, high-contrast status badges for the navy sidebar */
+      .side-badge {
+        padding: 8px 12px; border-radius: 8px; margin-bottom: 8px;
+        font-size: 0.88rem; font-weight: 600; color: #fff; line-height: 1.35;
+      }
+      .side-badge.ok   { background-color: var(--color-teal); }
+      .side-badge.warn { background-color: var(--color-warn); }
+      .side-note { color: var(--color-ice); font-size: 0.85rem; }
+      .side-hr { border: none; border-top: 1px solid rgba(202,220,252,0.30); margin: 12px 0; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- Session state ---------------------------------------------------------
 st.session_state.setdefault("draft", None)                 # working PolicyRule
 st.session_state.setdefault("approved_rule", None)         # active engine Rule
@@ -59,8 +109,6 @@ if not os.path.exists(CLAIMS_PATH):
     st.stop()
 claims_df = pd.read_csv(CLAIMS_PATH, dtype=str).fillna("")
 claim_columns = list(claims_df.columns)
-
-mode = active_mode("auto")
 
 
 # --- Helpers ---------------------------------------------------------------
@@ -101,23 +149,41 @@ def _reset():
 
 
 # --- Sidebar: status & controls -------------------------------------------
+def _badge(text: str, kind: str = "ok"):
+    st.markdown(f"<div class='side-badge {kind}'>{text}</div>", unsafe_allow_html=True)
+
+
 with st.sidebar:
     st.markdown("### Status")
+    mode_choice = st.selectbox(
+        "LLM mode",
+        options=["auto", "mock", "api"],
+        format_func=lambda m: {
+            "auto": "Auto (use API if key set)",
+            "mock": "Mock (offline, no API)",
+            "api": "API (Gemini)",
+        }[m],
+        help="Mock runs fully offline with a deterministic draft. Choose Mock if you "
+             "have no internet/API access.",
+    )
+    mode = active_mode(mode_choice)
     if mode == "api":
-        st.success(f"LLM: Gemini `{DEFAULT_MODEL}`")
+        _badge(f"LLM · Gemini {DEFAULT_MODEL}", "ok")
     else:
-        st.warning("LLM: mock mode (no API key)")
+        key_hint = "no API key" if mode_choice == "auto" else "selected"
+        _badge(f"LLM · mock mode ({key_hint})", "warn")
 
     approved_rule = st.session_state["approved_rule"]
     if approved_rule is None:
-        st.error("Active rule: **hardcoded sample** (not approved)")
+        _badge("Active rule · hardcoded sample (not approved)", "warn")
     else:
-        st.success(f"Active rule: **{approved_rule.rule_id} v{approved_rule.version}** (approved)")
+        _badge(f"Active rule · {approved_rule.rule_id} v{approved_rule.version} (approved)", "ok")
 
-    st.divider()
-    st.caption(
-        "LLM **drafts/refines** rules. A human **approves**. Deterministic Python "
-        "**decides** every claim. Synthetic data only."
+    st.markdown("<hr class='side-hr'>", unsafe_allow_html=True)
+    st.markdown(
+        "<p class='side-note'>LLM <b>drafts/refines</b> rules. A human <b>approves</b>. "
+        "Deterministic Python <b>decides</b> every claim. Synthetic data only.</p>",
+        unsafe_allow_html=True,
     )
     if st.button("↺ Reset all"):
         _reset()
@@ -141,11 +207,14 @@ with st.expander("Policy text", expanded=draft is None):
     if st.button("Extract rule with LLM", type="primary"):
         with st.spinner("Extracting..."):
             try:
-                st.session_state["draft"] = extract_rule(policy_text, claim_columns, mode="auto")
+                st.session_state["draft"] = extract_rule(policy_text, claim_columns, mode=mode)
                 st.session_state["proposed_patch"] = None
                 st.rerun()
             except Exception as exc:
                 st.error(f"Extraction failed: {exc}")
+                if mode == "api":
+                    st.info("This looks like an API/network problem. Switch **LLM mode** to "
+                            "**Mock (offline)** in the sidebar to run the demo without internet.")
 
 
 # === Step 2 — Refine (edit + NL) ===========================================
@@ -180,7 +249,7 @@ else:
             with st.spinner("Proposing patch..."):
                 try:
                     st.session_state["proposed_patch"] = propose_patch(
-                        instruction, draft, claim_columns, mode="auto"
+                        instruction, draft, claim_columns, mode=mode
                     )
                     st.rerun()
                 except Exception as exc:

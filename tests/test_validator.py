@@ -6,21 +6,21 @@ from src.validator import validate_policy_rule
 
 CLAIM_COLUMNS = [
     "claim_id", "patient_age", "procedure_code", "diagnosis_code",
-    "prior_dexa_within_24mo", "physician_order", "units",
+    "prior_ldct_within_12mo", "shared_decision_visit", "units",
 ]
 
 VALID_DRAFT = {
-    "rule_id": "CMS-DEXA-001",
-    "title": "DEXA Coverage",
-    "description": "DEXA coverage criteria.",
-    "service_codes": ["77080"],
-    "diagnosis_codes": ["M81.0", "M80.00"],
-    "min_patient_age": 65,
-    "max_patient_age": None,
-    "exclusion_flag_fields": ["prior_dexa_within_24mo"],
-    "required_documentation_fields": ["physician_order"],
+    "rule_id": "CMS-LDCT-001",
+    "title": "Lung Cancer Screening Coverage",
+    "description": "LDCT lung cancer screening coverage criteria.",
+    "service_codes": ["71271"],
+    "diagnosis_codes": [],
+    "min_patient_age": 50,
+    "max_patient_age": 77,
+    "exclusion_flag_fields": ["prior_ldct_within_12mo"],
+    "required_documentation_fields": ["shared_decision_visit"],
     "max_units": 1,
-    "source_evidence": "DEXA (77080) covered for beneficiaries 65 and older...",
+    "source_evidence": "LDCT (71271) covered annually for beneficiaries aged 50 to 77...",
 }
 
 
@@ -48,7 +48,7 @@ def test_bad_service_code_fails():
 
 
 def test_hcpcs_service_code_passes():
-    report = validate_policy_rule(_draft(service_codes=["G0121"]), CLAIM_COLUMNS)
+    report = validate_policy_rule(_draft(service_codes=["G0296"]), CLAIM_COLUMNS)
     assert report.is_valid, [i.message for i in report.errors()]
 
 
@@ -67,7 +67,7 @@ def test_unknown_claim_field_fails():
 
 
 def test_schema_error_short_circuits():
-    bad = _draft(service_codes="77080")  # should be a list, not a str
+    bad = _draft(service_codes="71271")  # should be a list, not a str
     report = validate_policy_rule(bad, CLAIM_COLUMNS)
     assert not report.is_valid
     assert any(i.check == "valid schema" for i in report.errors())
